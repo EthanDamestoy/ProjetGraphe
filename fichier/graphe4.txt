@@ -1,0 +1,12 @@
+# sommets
+a, b, c, d, e
+
+# arcs
+a b 1
+a c 4
+a d 7
+b c 2
+b d 3
+c d 1
+c e 5
+d e 2

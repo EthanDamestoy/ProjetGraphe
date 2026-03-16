@@ -1,0 +1,7 @@
+# sommets
+x, y, z
+
+# arcs
+x y 8
+y z 3
+x z 10
