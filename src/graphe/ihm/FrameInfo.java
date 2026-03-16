@@ -8,7 +8,6 @@ import javax.swing.JFrame;
  * Cette fenêtre n'est plus utilisée dans la version courante.
  * Les informations sont affichées dans PanelInfo au sein de FrameGraphe.
  * </p>
- * @author Étudiant
  * @version 1.0
  * @see PanelInfo
  * @see FrameGraphe

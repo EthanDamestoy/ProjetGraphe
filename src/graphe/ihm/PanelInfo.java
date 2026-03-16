@@ -32,7 +32,6 @@ import javax.swing.table.DefaultTableModel;
  * - De calculer et afficher le plus court chemin
  * - De visualiser les étapes du chemin dans un tableau
  * </p>
- * @author Étudiant
  * @version 1.0
  * @see Dijkstra
  * @see BellmanFord

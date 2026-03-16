@@ -17,7 +17,6 @@ import java.util.List;
  * - L'interface graphique
  * - Le chargement de graphes depuis des fichiers
  * </p>
- * @author Étudiant
  * @version 1.0
  */
 public class Controleur {

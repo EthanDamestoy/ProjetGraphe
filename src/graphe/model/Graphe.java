@@ -14,7 +14,6 @@ import org.graphstream.graph.implementations.SingleGraph;
  * - Une liste de sommets (nœuds)
  * - Une liste d'arcs (arêtes orientées avec poids)
  * </p>
- * @author Étudiant
  * @version 1.0
  * @see Sommet
  * @see Arc

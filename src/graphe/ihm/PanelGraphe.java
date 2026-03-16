@@ -17,7 +17,6 @@ import graphe.Controleur;
  * Affiche le graphe courant en utilisant la bibliothèque GraphStream.
  * Le graphe est automatiquement layouté avec un algorithme d'auto-layout.
  * </p>
- * @author Étudiant
  * @version 1.0
  * @see FrameGraphe
  */

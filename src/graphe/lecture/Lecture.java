@@ -24,7 +24,6 @@ import graphe.model.Sommet;
  * b c 3
  * </pre>
  * </p>
- * @author Étudiant
  * @version 1.0
  */
 public class Lecture {

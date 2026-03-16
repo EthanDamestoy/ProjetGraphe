@@ -8,7 +8,6 @@ package graphe.model;
  * - Un sommet destination
  * - Un poids (can be negative for some algorithms)
  * </p>
- * @author Étudiant
  * @version 1.0
  * @param source le sommet de départ de l'arc
  * @param destination le sommet d'arrivée de l'arc

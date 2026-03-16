@@ -12,7 +12,6 @@ import javax.swing.*;
  * - Un panneau de visualisation du graphe (PanelGraphe)
  * - Un panneau d'information et de calcul (PanelInfo)
  * </p>
- * @author Étudiant
  * @version 1.0
  * @see PanelGraphe
  * @see PanelInfo

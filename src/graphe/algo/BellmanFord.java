@@ -17,7 +17,6 @@ import java.util.Map;
  * - Complexité O(V × E)
  * - Plus lent que Dijkstra mais plus flexible
  * </p>
- * @author Étudiant
  * @version 1.0
  * @see Dijkstra
  */
