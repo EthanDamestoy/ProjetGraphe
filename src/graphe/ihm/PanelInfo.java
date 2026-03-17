@@ -4,14 +4,13 @@ import graphe.Controleur;
 import graphe.algo.BellmanFord;
 import graphe.algo.Dijkstra;
 import graphe.algo.ResultatPlusCourtChemin;
-import graphe.model.Arc;
 import graphe.model.Graphe;
 import graphe.model.Sommet;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -39,10 +38,10 @@ import javax.swing.table.DefaultTableModel;
 public class PanelInfo extends JPanel {
 
 	private final JComboBox<Sommet> cbSource;
-	private final JComboBox<Sommet> cbDestination;
 	private final JComboBox<String> cbAlgo;
 	private final JTextArea zoneResultat;
 	private final DefaultTableModel tableModel;
+	private final JScrollPane scrollTable;
 
 	public PanelInfo() {
 		this.setLayout(new BorderLayout(10, 10));
@@ -50,7 +49,7 @@ public class PanelInfo extends JPanel {
 		Graphe graphe = Controleur.get().getGraphe();
 		List<Sommet> sommets = graphe.getSommets();
 
-		JPanel panelControles = new JPanel(new GridLayout(4, 2, 8, 8));
+		JPanel panelControles = new JPanel(new GridLayout(3, 2, 8, 8));
 
 		panelControles.add(new JLabel("Sommet source :"));
 		this.cbSource = new JComboBox<>(new DefaultComboBoxModel<>(sommets.toArray(new Sommet[0])));
@@ -58,13 +57,6 @@ public class PanelInfo extends JPanel {
 			new JLabel(value == null ? "" : value.nom().toUpperCase())
 		);
 		panelControles.add(this.cbSource);
-
-		panelControles.add(new JLabel("Sommet destination :"));
-		this.cbDestination = new JComboBox<>(new DefaultComboBoxModel<>(sommets.toArray(new Sommet[0])));
-		this.cbDestination.setRenderer((list, value, index, isSelected, cellHasFocus) ->
-			new JLabel(value == null ? "" : value.nom().toUpperCase())
-		);
-		panelControles.add(this.cbDestination);
 
 		panelControles.add(new JLabel("Algorithme :"));
 		this.cbAlgo = new JComboBox<>(new String[] { "Bellman-Ford", "Dijkstra" });
@@ -81,131 +73,100 @@ public class PanelInfo extends JPanel {
 		this.zoneResultat.setEditable(false);
 		this.add(new JScrollPane(this.zoneResultat), BorderLayout.CENTER);
 
-		this.tableModel = new DefaultTableModel(
-			new Object[][] {},
-			new String[] { "Étape", "Sommet", "Distance", "Arc" }
-		) {
+		this.tableModel = new DefaultTableModel() {
 			@Override
-			public boolean isCellEditable(int row, int column) {
-				return false;
-			}
+			public boolean isCellEditable(int row, int column) { return false; }
 		};
 
 		JTable tableInfo = new JTable(this.tableModel);
 		tableInfo.setRowHeight(26);
 		tableInfo.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-		tableInfo.getColumnModel().getColumn(0).setPreferredWidth(60);
-		tableInfo.getColumnModel().getColumn(1).setPreferredWidth(80);
-		tableInfo.getColumnModel().getColumn(2).setPreferredWidth(80);
-		tableInfo.getColumnModel().getColumn(3).setPreferredWidth(300);
 		
-		JScrollPane scrollTable = new JScrollPane(tableInfo);
-		scrollTable.setPreferredSize(new Dimension(520, 280));
-		this.add(scrollTable, BorderLayout.SOUTH);
+		this.scrollTable = new JScrollPane(tableInfo);
+		this.scrollTable.setPreferredSize(new Dimension(520, 280));
+		this.add(this.scrollTable, BorderLayout.SOUTH);
 	}
 
 	private void calculerPlusCourtChemin() {
 		Graphe graphe = Controleur.get().getGraphe();
 		Sommet source = (Sommet) this.cbSource.getSelectedItem();
-		Sommet destination = (Sommet) this.cbDestination.getSelectedItem();
 		String algo = (String) this.cbAlgo.getSelectedItem();
 
-		if (source == null || destination == null || algo == null) {
+		if (source == null || algo == null) {
 			this.zoneResultat.setText("Sélection incomplète.");
 			this.tableModel.setRowCount(0);
-			return;
-		}
-
-		if (source.equals(destination)) {
-			String sommetNom = source.nom().toUpperCase();
-			this.zoneResultat.setText(
-				"Algorithme : " + algo + "\n"
-				+ "Source : " + sommetNom + "\n"
-				+ "Destination : " + sommetNom + "\n\n"
-				+ "Distance totale : 0\n"
-				+ "Chemin : " + sommetNom
-			);
-
-			this.mettreAJourTableChemin(graphe, algo, List.of(source));
+			this.scrollTable.setVisible(false);
 			return;
 		}
 
 		try {
-			ResultatPlusCourtChemin resultat;
-
-			if ("Dijkstra".equals(algo)) {
-				resultat = Dijkstra.plusCourtChemin(graphe, source, destination);
-			} else {
-				resultat = BellmanFord.plusCourtChemin(graphe, source, destination);
-			}
-
 			String sourceNom = source.nom().toUpperCase();
-			String destinationNom = destination.nom().toUpperCase();
+			StringBuilder texte = new StringBuilder();
+			texte.append("Algorithme : ").append(algo).append("\n");
+			texte.append("Source : ").append(sourceNom).append("\n\n");
+			texte.append("Plus courts chemins vers les autres sommets :\n");
 
-			if (resultat.distanceTotale() == Integer.MAX_VALUE || resultat.chemin().isEmpty()) {
-				this.zoneResultat.setText(
-					"Algorithme : " + algo + "\n"
-					+ "Source : " + sourceNom + "\n"
-					+ "Destination : " + destinationNom + "\n\n"
-					+ "Aucun chemin trouvé."
-				);
+			boolean auMoinsUnChemin = false;
+			for (Sommet destination : graphe.getSommets()) {
+				if (destination.equals(source)) continue;
 
-				this.tableModel.setRowCount(0);
-				return;
+				ResultatPlusCourtChemin resultat = "Dijkstra".equals(algo)
+					? Dijkstra.plusCourtChemin(graphe, source, destination)
+					: BellmanFord.plusCourtChemin(graphe, source, destination);
+
+				String destinationNom = destination.nom().toUpperCase();
+				if (resultat.distanceTotale() == Integer.MAX_VALUE || resultat.chemin().isEmpty()) {
+					texte.append("- Vers ").append(destinationNom).append(" : aucun chemin\n");
+					continue;
+				}
+
+				auMoinsUnChemin = true;
+				String cheminLisible = resultat.chemin().stream()
+					.map(s -> s.nom().toUpperCase())
+					.collect(Collectors.joining(" → "));
+				texte.append("- Vers ").append(destinationNom)
+					.append(" : distance ").append(resultat.distanceTotale())
+					.append(" | chemin ").append(cheminLisible)
+					.append("\n");
 			}
 
-			String cheminLisible = resultat.chemin().stream()
-				.map(s -> s.nom().toUpperCase())
-				.collect(Collectors.joining(" → "));
+			if (!auMoinsUnChemin) {
+				texte.append("Aucun chemin trouvé depuis la source.\n");
+			}
 
-			this.zoneResultat.setText(
-				"Algorithme : " + algo + "\n"
-				+ "Source : " + sourceNom + "\n"
-				+ "Destination : " + destinationNom + "\n\n"
-				+ "Distance totale : " + resultat.distanceTotale() + "\n"
-				+ "Chemin : " + cheminLisible
-			);
+			this.zoneResultat.setText(texte.toString());
 
-			this.mettreAJourTableChemin(graphe, algo, resultat.chemin());
+			this.mettreAJourTableChemin(graphe, algo);
+			this.scrollTable.setVisible(true);
 		} catch (IllegalArgumentException | IllegalStateException ex) {
 			this.zoneResultat.setText("Erreur : " + ex.getMessage());
 			this.tableModel.setRowCount(0);
+			this.scrollTable.setVisible(false);
 		}
 	}
 
-	private void mettreAJourTableChemin(
-		Graphe graphe,
-		String algo,
-		List<Sommet> chemin
-	) {
+	private void mettreAJourTableChemin(Graphe graphe, String algo) {
 		this.tableModel.setRowCount(0);
+		while (this.tableModel.getColumnCount() > 0)
+			this.tableModel.setColumnCount(this.tableModel.getColumnCount() - 1);
 
-		int distanceCumulee = 0;
-		for (int i = 0; i < chemin.size(); i++) {
-			Sommet courant = chemin.get(i);
-			String arcTexte = "-";
+		Sommet source = (Sommet) this.cbSource.getSelectedItem();
+		List<Map<Sommet, Integer>> hist = "Dijkstra".equals(algo)
+			? Dijkstra.historique(graphe, source)
+			: BellmanFord.historique(graphe, source);
 
-			if (i > 0) {
-				Sommet precedent = chemin.get(i - 1);
-				Optional<Arc> arcTrouve = graphe.getArcs().stream()
-					.filter(a -> a.source().equals(precedent) && a.destination().equals(courant))
-					.findFirst();
+		List<Sommet> sommets = graphe.getSommets();
+		this.tableModel.addColumn("");
+		for (Sommet s : sommets) this.tableModel.addColumn("d(" + s.nom().toUpperCase() + ")");
 
-				if (arcTrouve.isPresent()) {
-					Arc arc = arcTrouve.get();
-					distanceCumulee += arc.poids();
-					arcTexte = precedent.nom().toUpperCase() + " → " + courant.nom().toUpperCase() + " (" + arc.poids() + ")";
-				} else {
-					arcTexte = precedent.nom().toUpperCase() + " → " + courant.nom().toUpperCase();
-				}
+		for (int i = 0; i < hist.size(); i++) {
+			Object[] row = new Object[sommets.size() + 1];
+			row[0] = (i == 0) ? "Initialisation" : "Itération " + i;
+			for (int j = 0; j < sommets.size(); j++) {
+				int val = hist.get(i).getOrDefault(sommets.get(j), Integer.MAX_VALUE);
+				row[j + 1] = (val == Integer.MAX_VALUE) ? "+∞" : val;
 			}
-
-			this.tableModel.addRow(new Object[] {
-				i + 1,
-				courant.nom().toUpperCase(),
-				distanceCumulee,
-				arcTexte
-			});
+			this.tableModel.addRow(row);
 		}
 	}
 }

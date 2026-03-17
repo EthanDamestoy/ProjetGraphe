@@ -1,0 +1,23 @@
+# sommets
+a, b, c, d, e, f, g, h, i, j, k, l
+
+# arcs
+a b 5
+a c 2
+b d 3
+c d 8
+c e 4
+e d -6
+d f 2
+e f 5
+f g 1
+g h 2
+h i 2
+i j 3
+j k 1
+k l 2
+b l 25
+a l 40
+e i 7
+d h 4
+c g 10

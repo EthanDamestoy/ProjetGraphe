@@ -1,0 +1,14 @@
+# sommets
+z, u, v, x, y
+
+# arcs
+u v 5
+u x 8
+u y -4
+v u -2
+x v -3
+x y 9
+y v 7
+y z 2
+z u 6
+z x 7
